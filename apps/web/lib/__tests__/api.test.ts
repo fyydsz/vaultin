@@ -188,6 +188,7 @@ describe("Frontend API Client Unit Tests", () => {
       const resolvedUrl = getApiBaseUrl();
       expect(resolvedUrl).toContain("192.168.1.4");
       expect(resolvedUrl).toContain(":8000");
+      expect(resolvedUrl.endsWith("/v1")).toBe(true);
     } finally {
       Object.defineProperty(globalThis, "window", {
         value: originalWindow,
@@ -195,5 +196,11 @@ describe("Frontend API Client Unit Tests", () => {
         configurable: true,
       });
     }
+  });
+
+  it("should ensure base URL always includes /v1 versioning", async () => {
+    const { getApiBaseUrl } = await import("../api");
+    const url = getApiBaseUrl();
+    expect(url.endsWith("/v1")).toBe(true);
   });
 });

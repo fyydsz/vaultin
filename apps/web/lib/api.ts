@@ -220,15 +220,17 @@ export const getApiBaseUrl = (): string => {
       (envUrl.includes("localhost") || envUrl.includes("127.0.0.1") || !envUrl)
     ) {
       if (!envUrl) {
-        return `http://${currentHost}:8000`;
+        return `http://${currentHost}:8000/v1`;
       }
-      return envUrl
+      const replaced = envUrl
         .replace("://localhost", `://${currentHost}`)
         .replace("://127.0.0.1", `://${currentHost}`);
+      return replaced.endsWith("/v1") ? replaced : `${replaced}/v1`;
     }
   }
 
-  return envUrl || "http://localhost:8000";
+  const base = envUrl || "http://localhost:8000";
+  return base.endsWith("/v1") ? base : `${base}/v1`;
 };
 
 export const API_BASE_URL = getApiBaseUrl();

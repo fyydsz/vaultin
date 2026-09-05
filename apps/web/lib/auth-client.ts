@@ -4,7 +4,7 @@ import { getApiBaseUrl } from "./api";
 
 const getAuthBaseUrl = (): string => {
   const baseUrl = getApiBaseUrl();
-  return `${baseUrl.replace(/\/$/, "")}/api/auth`;
+  return `${baseUrl.replace(/\/$/, "")}/auth`;
 };
 
 export const authClient = createAuthClient({
