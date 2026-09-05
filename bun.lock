@@ -17,7 +17,6 @@
         "@elysiajs/jwt": "^1.4.2",
         "@prisma/adapter-pg": "latest",
         "@prisma/client": "latest",
-        "@vaultin/shared": "workspace:*",
         "better-auth": "^1.6.29",
         "elysia": "latest",
         "pg": "^8.23.0",
@@ -37,7 +36,6 @@
       "dependencies": {
         "@base-ui/react": "^1.7.0",
         "@supabase/supabase-js": "^2.112.3",
-        "@vaultin/shared": "workspace:*",
         "@vercel/analytics": "^2.0.1",
         "better-auth": "^1.6.29",
         "class-variance-authority": "^0.7.1",
