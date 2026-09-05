@@ -1,0 +1,4 @@
+[submodule "apps/api"]
+	path = apps/api
+	url = https://github.com/fyydsz/money-saving-backend.git
+	branch = feature/supabase-postgresql

@@ -1,0 +1,5 @@
+Contact: security@vaultin.web.id
+Expires: 2027-08-25T00:00:00.000Z
+Preferred-Languages: en, id
+Canonical: https://vaultin.web.id/.well-known/security.txt
+Policy: https://vaultin.web.id/security-policy

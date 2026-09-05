@@ -1,0 +1,19 @@
+{
+  "name": "vaultin-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun --filter '*' dev",
+    "dev:api": "bun --filter '@vaultin/api' dev",
+    "dev:web": "bun --filter '@vaultin/web' dev",
+    "build": "bun --filter '*' build",
+    "test": "bun --filter '*' test",
+    "lint": "bun --filter '*' lint"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}
