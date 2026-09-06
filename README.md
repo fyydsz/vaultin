@@ -5,33 +5,9 @@
 
 Most finance apps are either cluttered with ads and subscriptions, or too complex for daily use. **Vaultin** is built for people who want clear control over their money—setting aside funds for real goals, seeing where daily cash actually goes, and staying on top of monthly budgets without feeling overwhelmed.
 
-<<<<<<< HEAD
-```text
-vaultin/
-├── apps/
-│   ├── api/          # Backend service (Private Git Submodule)
-│   └── web/          # Frontend service (Next.js 16, React 19, Tailwind CSS)
-├── packages/
-│   └── shared/       # Shared TypeScript types, schemas, and utilities
-├── package.json      # Root workspace configuration
-└── bun.lock          # Global Bun lockfile
-```
-
-> **Catatan Submodule Private:**
-> Folder `apps/api` terhubung ke repository private [`money-saving-backend`](https://github.com/fyydsz/money-saving-backend).
-> Saat meng-clone repo ini di lingkungan baru:
-> ```bash
-> git clone --recurse-submodules <URL_REPO_VAULTIN>
-> # Atau jika sudah terlanjur clone biasa:
-> git submodule update --init --recursive
-> ```
-
-## Cara Menjalankan
-=======
 ---
 
 ## 🎯 What You Can Do with Vaultin
->>>>>>> 0f66bc23bb3422e08defc021c0167e733b1142b0
 
 ### 1. Goal-Based Savings (Vaults)
 Instead of keeping all your savings in one generic lump sum, divide your money into dedicated vaults:
@@ -69,3 +45,74 @@ Vaultin started with a simple problem: spreadsheet fatigue. Tracking finances in
 
 Vaultin focuses strictly on what matters: **giving you a clear, honest snapshot of your finances so you can save with intention.**
 
+---
+
+## 🛠️ Tech Stack & Architecture
+
+Monorepo fullstack menggunakan **Bun Workspaces**:
+
+```text
+vaultin/
+├── apps/
+│   ├── api/          # Backend service (Private Git Submodule - Bun, Elysia, Better Auth, Prisma)
+│   └── web/          # Frontend service (Next.js 16, React 19, Tailwind CSS)
+├── packages/
+│   └── shared/       # Shared TypeScript types, schemas, and utilities
+├── package.json      # Root workspace configuration
+└── bun.lock          # Global Bun lockfile
+```
+
+> **Catatan Submodule Private:**
+> Folder `apps/api` terhubung ke repository private [`money-saving-backend`](https://github.com/fyydsz/money-saving-backend).
+> Saat meng-clone repo ini di lingkungan baru:
+> ```bash
+> git clone --recurse-submodules https://github.com/fyydsz/vaultin.git
+> # Atau jika sudah terlanjur clone biasa:
+> git submodule update --init --recursive
+> ```
+
+---
+
+## 🚀 Cara Menjalankan
+
+### Install Dependensi
+Jalankan dari root folder:
+```bash
+bun install
+```
+
+### Menjalankan Development Server
+
+- **Jalankan semua aplikasi bersamaan:**
+  ```bash
+  bun dev
+  ```
+- **Jalankan backend saja:**
+  ```bash
+  bun dev:api
+  ```
+- **Jalankan frontend saja:**
+  ```bash
+  bun dev:web
+  ```
+
+### Menjalankan Pengujian (Tests)
+
+- **Jalankan semua test:**
+  ```bash
+  bun test
+  ```
+- **Jalankan test backend:**
+  ```bash
+  bun --filter '@vaultin/api' test
+  ```
+- **Jalankan test frontend:**
+  ```bash
+  bun --filter '@vaultin/web' test
+  ```
+
+### Build Proyek
+
+```bash
+bun build
+```
