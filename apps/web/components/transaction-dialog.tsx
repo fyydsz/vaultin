@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { CategorySelect } from "@/components/category-select";
 import { LabelCombobox } from "@/components/label-combobox";
-import { BankVault, Transaction, api } from "@/lib/api";
+import { BankVault, Transaction, Budget, api } from "@/lib/api";
 import {
   PlusIcon,
   PencilIcon,
@@ -34,12 +34,16 @@ import {
   BanknoteIcon,
   AlertCircleIcon,
   CalendarIcon,
+  PiggyBankIcon,
 } from "lucide-react";
 
 interface TransactionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   vaults: BankVault[];
+  budgets?: Budget[];
+  defaultBudget?: Budget | null;
+  fixedType?: "EXPENSE" | "INCOME";
   transactionToEdit?: Transaction | null;
   defaultAccountId?: string;
   onSuccess: (transaction: Transaction) => void;
@@ -49,12 +53,16 @@ export function TransactionDialog({
   open,
   onOpenChange,
   vaults = [],
+  budgets = [],
+  defaultBudget,
+  fixedType,
   transactionToEdit,
   defaultAccountId,
   onSuccess,
 }: TransactionDialogProps) {
   const isEditing = !!transactionToEdit;
 
+  const [selectedBudgetId, setSelectedBudgetId] = useState("");
   const [accountId, setAccountId] = useState("");
   const [type, setType] = useState<"EXPENSE" | "INCOME">("EXPENSE");
   const [amount, setAmount] = useState("");
@@ -68,10 +76,32 @@ export function TransactionDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [internalBudgets, setInternalBudgets] = useState<Budget[]>([]);
+
+  useEffect(() => {
+    if (open && (!budgets || budgets.length === 0)) {
+      api.getBudgets()
+        .then((res) => {
+          if (res.budgets) setInternalBudgets(res.budgets);
+        })
+        .catch(() => {});
+    }
+  }, [open, budgets]);
+
+  const allAvailableBudgets = useMemo(() => {
+    const sourceList = (budgets && budgets.length > 0) ? budgets : internalBudgets;
+    const list = [...sourceList];
+    if (defaultBudget && !list.some((b) => b.id === defaultBudget.id)) {
+      list.unshift(defaultBudget);
+    }
+    return list;
+  }, [budgets, internalBudgets, defaultBudget]);
+
   useEffect(() => {
     if (open) {
       setErrorMessage("");
       if (transactionToEdit) {
+        setSelectedBudgetId("");
         setAccountId(transactionToEdit.accountId);
         const isInc =
           transactionToEdit.type === "INCOME" || transactionToEdit.amount > 0;
@@ -89,12 +119,27 @@ export function TransactionDialog({
         );
         setLabels(transactionToEdit.labels || []);
         setNotes(transactionToEdit.notes || "");
-      } else {
+      } else if (defaultBudget) {
+        setSelectedBudgetId(defaultBudget.id);
         const initialAccountId =
           defaultAccountId ||
           (vaults.find((v) => v.isDefault)?.id || vaults[0]?.id || "");
         setAccountId(initialAccountId);
         setType("EXPENSE");
+        setAmount("");
+        setDate(new Date().toISOString().slice(0, 10));
+        setDescription("");
+        setCategory(defaultBudget.categorySlug || "food_beverage");
+        setLabels(defaultBudget.labels || []);
+        setNotes("");
+        setAdjustBalance(true);
+      } else {
+        setSelectedBudgetId("");
+        const initialAccountId =
+          defaultAccountId ||
+          (vaults.find((v) => v.isDefault)?.id || vaults[0]?.id || "");
+        setAccountId(initialAccountId);
+        setType(fixedType || "EXPENSE");
         setAmount("");
         setDate(new Date().toISOString().slice(0, 10));
         setDescription("");
@@ -104,7 +149,47 @@ export function TransactionDialog({
         setAdjustBalance(true);
       }
     }
-  }, [open, transactionToEdit, defaultAccountId, vaults]);
+  }, [open, transactionToEdit, defaultAccountId, vaults, defaultBudget, fixedType]);
+
+  const activeBudget = useMemo(() => {
+    if (!selectedBudgetId || selectedBudgetId === "none") return null;
+    return allAvailableBudgets.find((b) => b.id === selectedBudgetId) || null;
+  }, [selectedBudgetId, allAvailableBudgets]);
+
+  const isExpenseOnly = fixedType === "EXPENSE" || !!defaultBudget;
+
+  const isBudgetActive =
+    !!defaultBudget || (type === "EXPENSE" && !!activeBudget && selectedBudgetId !== "none");
+
+  const handleBudgetChange = (bId: string | null) => {
+    const val = bId || "none";
+    setSelectedBudgetId(val);
+    if (val && val !== "none") {
+      const found = allAvailableBudgets.find((b) => b.id === val);
+      if (found) {
+        setType("EXPENSE");
+        setCategory(found.categorySlug);
+        if (found.labels && found.labels.length > 0) {
+          setLabels(found.labels);
+        }
+      }
+    }
+  };
+
+  const handleCategoryChange = (newCat: string) => {
+    setCategory(newCat);
+    if (!defaultBudget) {
+      const matchingBudget = allAvailableBudgets.find((b) => b.categorySlug === newCat);
+      if (matchingBudget) {
+        setSelectedBudgetId(matchingBudget.id);
+        if (matchingBudget.labels && matchingBudget.labels.length > 0) {
+          setLabels((prev) => Array.from(new Set([...prev, ...(matchingBudget.labels || [])])));
+        }
+      } else if (activeBudget && activeBudget.categorySlug !== newCat) {
+        setSelectedBudgetId("none");
+      }
+    }
+  };
 
   const selectedVault = vaults.find((v) => v.id === accountId);
 
@@ -212,6 +297,16 @@ export function TransactionDialog({
                 <PencilIcon className="size-4 text-primary" />
                 Edit Transaction
               </>
+            ) : activeBudget ? (
+              <>
+                <PiggyBankIcon className="size-4 text-primary" />
+                New Budget Expense
+              </>
+            ) : isExpenseOnly ? (
+              <>
+                <PlusIcon className="size-4 text-primary" />
+                New Expense
+              </>
             ) : (
               <>
                 <PlusIcon className="size-4 text-primary" />
@@ -222,6 +317,10 @@ export function TransactionDialog({
           <DialogDescription className="text-xs text-muted-foreground">
             {isEditing
               ? "Modify details for this movement."
+              : activeBudget
+              ? `Record an expense movement allocated to ${activeBudget.name}.`
+              : isExpenseOnly
+              ? "Record an expense movement into your vault."
               : "Record an income or expense movement into your vault."}
           </DialogDescription>
         </DialogHeader>
@@ -238,64 +337,72 @@ export function TransactionDialog({
           )}
 
           {/* Type Switcher: Expense vs Income */}
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              type="button"
-              variant={type === "EXPENSE" ? "secondary" : "outline"}
-              onClick={() => {
-                setType("EXPENSE");
-                setCategory((prev) =>
-                  [
-                    "salary_income",
-                    "side_income",
-                    "savings_investment",
-                    "other_income",
-                  ].includes(prev)
-                    ? "food_beverage"
-                    : prev
-                );
-              }}
-              className={`flex items-center justify-center gap-1.5 h-9 text-xs font-semibold cursor-pointer ${
-                type === "EXPENSE"
-                  ? "border-rose-500/50 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20"
-                  : "border-border bg-card/50 text-muted-foreground hover:bg-accent/40"
-              }`}
-            >
+          {isExpenseOnly ? (
+            <div className="flex items-center justify-center gap-1.5 h-8.5 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-semibold select-none">
               <ArrowDownRightIcon className="size-3.5" />
-              Expense (-)
-            </Button>
-            <Button
-              type="button"
-              variant={type === "INCOME" ? "secondary" : "outline"}
-              onClick={() => {
-                setType("INCOME");
-                setCategory((prev) =>
-                  [
-                    "food_beverage",
-                    "transportation",
-                    "shopping",
-                    "housing_utilities",
-                    "health",
-                    "beauty",
-                    "education",
-                    "entertainment",
-                    "gift_donation",
-                    "other_expense",
-                  ].includes(prev)
-                    ? "salary_income"
-                    : prev
-                );
-              }}
-              className={`flex items-center justify-center gap-1.5 h-9 text-xs font-semibold cursor-pointer ${
-                type === "INCOME"
-                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
-                  : "border-border bg-card/50 text-muted-foreground hover:bg-accent/40"
-              }`}
-            >
-              <ArrowUpRightIcon className="size-3.5" />
-              Income (+)
-            </Button>
-          </div>
+              <span>Expense (-)</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                type="button"
+                variant={type === "EXPENSE" ? "secondary" : "outline"}
+                onClick={() => {
+                  setType("EXPENSE");
+                  setCategory((prev) =>
+                    [
+                      "salary_income",
+                      "side_income",
+                      "savings_investment",
+                      "other_income",
+                    ].includes(prev)
+                      ? "food_beverage"
+                      : prev
+                  );
+                }}
+                className={`flex items-center justify-center gap-1.5 h-9 text-xs font-semibold cursor-pointer ${
+                  type === "EXPENSE"
+                    ? "border-rose-500/50 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20"
+                    : "border-border bg-card/50 text-muted-foreground hover:bg-accent/40"
+                }`}
+              >
+                <ArrowDownRightIcon className="size-3.5" />
+                Expense (-)
+              </Button>
+              <Button
+                type="button"
+                variant={type === "INCOME" ? "secondary" : "outline"}
+                onClick={() => {
+                  setType("INCOME");
+                  setSelectedBudgetId("none");
+                  setCategory((prev) =>
+                    [
+                      "food_beverage",
+                      "transportation",
+                      "shopping",
+                      "housing_utilities",
+                      "health",
+                      "beauty",
+                      "education",
+                      "entertainment",
+                      "gift_donation",
+                      "other_expense",
+                    ].includes(prev)
+                      ? "salary_income"
+                      : prev
+                  );
+                }}
+                className={`flex items-center justify-center gap-1.5 h-9 text-xs font-semibold cursor-pointer ${
+                  type === "INCOME"
+                    ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
+                    : "border-border bg-card/50 text-muted-foreground hover:bg-accent/40"
+                }`}
+              >
+                <ArrowUpRightIcon className="size-3.5" />
+                Income (+)
+              </Button>
+            </div>
+          )}
 
           {/* Account Selector */}
           <div className="space-y-1.5">
@@ -385,15 +492,171 @@ export function TransactionDialog({
             />
           </div>
 
+          {/* Budget Selector (Optional / Smart preset) - only for EXPENSE */}
+          {type === "EXPENSE" && (
+            defaultBudget ? (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <PiggyBankIcon className="size-3.5 text-primary" />
+                  Budget
+                </Label>
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-2 text-xs flex items-center justify-between animate-in fade-in-50">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div
+                      className="flex size-6 items-center justify-center rounded-md text-white text-xs shrink-0 shadow-2xs"
+                      style={{ backgroundColor: (activeBudget || defaultBudget).color || "#10B981" }}
+                    >
+                      <PiggyBankIcon className="size-3" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground truncate text-xs leading-tight">
+                        {(activeBudget || defaultBudget).name}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                        {(activeBudget || defaultBudget).remaining >= 0
+                          ? `Remaining: ${new Intl.NumberFormat("id-ID", {
+                              style: "currency",
+                              currency: "IDR",
+                              maximumFractionDigits: 0,
+                            }).format((activeBudget || defaultBudget).remaining)}`
+                          : `Over budget by ${new Intl.NumberFormat("id-ID", {
+                              style: "currency",
+                              currency: "IDR",
+                              maximumFractionDigits: 0,
+                            }).format(Math.abs((activeBudget || defaultBudget).remaining))}`}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                      (activeBudget || defaultBudget).percentage >= 100
+                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                        : (activeBudget || defaultBudget).percentage >= 75
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    }`}
+                  >
+                    {(activeBudget || defaultBudget).percentage}% used
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <PiggyBankIcon className="size-3.5 text-primary" />
+                    Budget (Optional)
+                  </Label>
+                  {selectedBudgetId && selectedBudgetId !== "none" && (
+                    <button
+                      type="button"
+                      onClick={() => handleBudgetChange("none")}
+                      className="text-[10px] text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <Select
+                  value={selectedBudgetId || "none"}
+                  onValueChange={handleBudgetChange}
+                >
+                  <SelectTrigger className="w-full h-8 text-xs bg-muted/40 border-border/70 cursor-pointer">
+                    <SelectValue placeholder="Select budget">
+                      {activeBudget ? (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="size-2 rounded-full shrink-0"
+                            style={{ backgroundColor: activeBudget.color || "#10B981" }}
+                          />
+                          <span className="font-medium truncate">{activeBudget.name}</span>
+                        </div>
+                      ) : (
+                        "None (No budget linked)"
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="text-xs">
+                    <SelectItem value="none" className="cursor-pointer">
+                      <span className="text-muted-foreground">None (No budget linked)</span>
+                    </SelectItem>
+                    {allAvailableBudgets.map((b) => (
+                      <SelectItem key={b.id} value={b.id} className="cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="size-2 rounded-full shrink-0"
+                            style={{ backgroundColor: b.color || "#10B981" }}
+                          />
+                          <span className="font-medium truncate">{b.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Active Budget Live Context Banner */}
+                {activeBudget && (
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-2 text-xs flex items-center justify-between mt-1 animate-in fade-in-50">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div
+                        className="flex size-6 items-center justify-center rounded-md text-white text-xs shrink-0 shadow-2xs"
+                        style={{ backgroundColor: activeBudget.color || "#10B981" }}
+                      >
+                        <PiggyBankIcon className="size-3" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground truncate text-xs leading-tight">
+                          {activeBudget.name}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                          {activeBudget.remaining >= 0
+                            ? `Remaining: ${new Intl.NumberFormat("id-ID", {
+                                style: "currency",
+                                currency: "IDR",
+                                maximumFractionDigits: 0,
+                              }).format(activeBudget.remaining)}`
+                            : `Over budget by ${new Intl.NumberFormat("id-ID", {
+                                style: "currency",
+                                currency: "IDR",
+                                maximumFractionDigits: 0,
+                              }).format(Math.abs(activeBudget.remaining))}`}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                        activeBudget.percentage >= 100
+                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                          : activeBudget.percentage >= 75
+                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                          : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                      }`}
+                    >
+                      {activeBudget.percentage}% used
+                    </span>
+                  </div>
+                )}
+              </div>
+            )
+          )}
+
           {/* Category */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-foreground">
-              Category
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold text-foreground">
+                Category
+              </Label>
+              {isBudgetActive && (
+                <span className="text-[10px] text-muted-foreground italic">
+                  Locked to selected budget
+                </span>
+              )}
+            </div>
             <CategorySelect
               value={category}
-              onChange={setCategory}
+              onChange={handleCategoryChange}
               typeFilter={type}
+              disabled={isBudgetActive}
               className="bg-muted/40 border-border/70 h-8"
             />
           </div>

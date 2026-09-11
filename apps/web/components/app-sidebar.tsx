@@ -22,6 +22,7 @@ import {
   CreditCardIcon,
   ReceiptTextIcon,
   PiggyBankIcon,
+  TargetIcon,
   UsersIcon,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
@@ -58,6 +59,11 @@ const navigationData = {
       title: "Budgets",
       url: "/dashboard/budgets",
       icon: <PiggyBankIcon />,
+    },
+    {
+      title: "Goals",
+      url: "/dashboard/goals",
+      icon: <TargetIcon />,
     },
     {
       title: "Socials",

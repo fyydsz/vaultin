@@ -296,7 +296,7 @@ function VaultForm({ vaultToEdit, existingVaultCount, onSuccess, onClose }: Vaul
     }
 
     if (!isEditing && numBalance < 0) {
-      setErrorMessage("Nominal saldo tidak boleh bernilai negatif (minimal 0)");
+      setErrorMessage("Initial balance cannot be negative (minimum 0)");
       return;
     }
 

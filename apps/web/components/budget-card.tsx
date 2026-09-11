@@ -12,6 +12,8 @@ import {
   RotateCcw,
   Clock,
   TrendingUp,
+  Plus,
+  AlertCircle,
 } from "lucide-react";
 import {
   Card,
@@ -31,7 +33,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Budget, MonthlyBudgetStat } from "@/lib/api";
+import { Budget, BankVault, MonthlyBudgetStat } from "@/lib/api";
 import { getCategoryIcon } from "@/components/category-select";
 
 interface TooltipPayloadData {
@@ -44,8 +46,10 @@ interface TooltipPayloadData {
 
 interface BudgetCardProps {
   budget: Budget;
+  vaults?: BankVault[];
   onEdit: (budget: Budget) => void;
   onDelete: (budget: Budget) => void;
+  onAddTransaction?: (budget: Budget) => void;
 }
 
 const chartConfig = {
@@ -55,7 +59,13 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
+export function BudgetCard({
+  budget,
+  vaults = [],
+  onEdit,
+  onDelete,
+  onAddTransaction,
+}: BudgetCardProps) {
   const formatCurrency = useCallback((val: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -220,6 +230,13 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem
+                  onClick={() => onAddTransaction?.(budget)}
+                  className="gap-2 text-xs cursor-pointer"
+                >
+                  <Plus className="size-3.5" />
+                  New Transaction
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => onEdit(budget)}
                   className="gap-2 text-xs cursor-pointer"
                 >
@@ -368,14 +385,29 @@ export function BudgetCard({ budget, onEdit, onDelete }: BudgetCardProps) {
           )}
         </div>
 
-        {/* View Details Link */}
-        <Link
-          href={`/dashboard/transactions?category=${encodeURIComponent(budget.categorySlug)}`}
-          className="group/link inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline hover:text-primary/80 transition-colors shrink-0 ml-2"
-        >
-          <span>Transactions</span>
-          <ArrowRight className="size-3 transition-transform group-hover/link:translate-x-0.5" />
-        </Link>
+        {/* Actions */}
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          {onAddTransaction && (
+            <Button
+              size="xs"
+              variant="default"
+              onClick={() => onAddTransaction(budget)}
+              className="h-6.5 gap-1 text-[11px] font-medium cursor-pointer px-2"
+            >
+              <Plus className="size-3" />
+              <span>Expense</span>
+            </Button>
+          )}
+
+          {/* View Details Link */}
+          <Link
+            href={`/dashboard/transactions?category=${encodeURIComponent(budget.categorySlug)}`}
+            className="group/link inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline hover:text-primary/80 transition-colors shrink-0 ml-1"
+          >
+            <span>History</span>
+            <ArrowRight className="size-3 transition-transform group-hover/link:translate-x-0.5" />
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   );

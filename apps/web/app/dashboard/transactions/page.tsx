@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { useMounted } from "@/hooks/use-mounted";
 import {
@@ -12,6 +13,8 @@ import {
   TrendingUpIcon,
   TrendingDownIcon,
   ActivityIcon,
+  AlertCircleIcon,
+  ArrowRightIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,7 +26,12 @@ import {
 } from "@/components/transaction-filter-popover";
 import { TransactionsTable } from "@/components/transactions-table";
 import { TransactionDialog } from "@/components/transaction-dialog";
-import { BankVault, Transaction, api } from "@/lib/api";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card";
+import { BankVault, Transaction, Budget, api } from "@/lib/api";
 import { useCategoryStore } from "@/stores/category-store";
 import { useLabelStore } from "@/stores/label-store";
 
@@ -44,6 +52,7 @@ export default function TransactionsPage() {
 
   const [vaults, setVaults] = useState<BankVault[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Filters state
@@ -60,7 +69,7 @@ export default function TransactionsPage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [vaultsRes, txRes] = await Promise.all([
+      const [vaultsRes, txRes, budgetsRes] = await Promise.all([
         api.getVaults().catch(() => ({ vaults: [], summary: { totalBalance: 0, count: 0 } })),
         api
           .getTransactions({ limit: 500 })
@@ -68,9 +77,11 @@ export default function TransactionsPage() {
             transactions: [],
             pagination: { page: 1, limit: 500, total: 0, totalPages: 1 },
           })),
+        api.getBudgets().catch(() => ({ budgets: [] })),
       ]);
       setVaults(vaultsRes.vaults || []);
       setTransactions(txRes.transactions || []);
+      setBudgets(budgetsRes.budgets || []);
     } catch (err) {
       console.error("Failed to load transactions data:", err);
     } finally {
@@ -248,17 +259,63 @@ export default function TransactionsPage() {
             />
             Refresh
           </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setTxToEdit(null);
-              setIsDialogOpen(true);
-            }}
-            className="gap-1.5 text-xs font-semibold cursor-pointer h-9"
-          >
-            <PlusIcon className="size-4" />
-            New Transaction
-          </Button>
+          {vaults.length === 0 ? (
+            <HoverCard>
+              <HoverCardTrigger
+                delay={200}
+                closeDelay={150}
+                render={
+                  <span
+                    className="inline-block cursor-not-allowed"
+                    tabIndex={0}
+                  />
+                }
+              >
+                <Button
+                  disabled
+                  size="sm"
+                  className="gap-1.5 text-xs font-semibold h-9 pointer-events-none"
+                >
+                  <PlusIcon className="size-4" />
+                  New Transaction
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardContent side="bottom" align="end" className="w-72 p-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <AlertCircleIcon className="size-4" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-semibold text-foreground">
+                      Vault Required
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      You need to create at least one vault before recording transactions.
+                    </p>
+                    <Link
+                      href="/dashboard/vaults?action=new"
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline pt-0.5"
+                    >
+                      <span>Create a vault</span>
+                      <ArrowRightIcon className="size-3" />
+                    </Link>
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => {
+                setTxToEdit(null);
+                setIsDialogOpen(true);
+              }}
+              className="gap-1.5 text-xs font-semibold cursor-pointer h-9"
+            >
+              <PlusIcon className="size-4" />
+              New Transaction
+            </Button>
+          )}
         </div>
       </div>
 
@@ -545,6 +602,7 @@ export default function TransactionsPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         vaults={vaults}
+        budgets={budgets}
         transactionToEdit={txToEdit}
         onSuccess={() => {
           fetchData();

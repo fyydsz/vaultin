@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   PiggyBankIcon,
@@ -10,10 +11,21 @@ import {
   RefreshCwIcon,
   AlertCircleIcon,
   WalletCardsIcon,
+  ArrowRightIcon,
+  TrendingUpIcon,
+  SparklesIcon,
+  CheckCircle2Icon,
+  CoinsIcon,
 } from "lucide-react";
 import { BudgetCard } from "@/components/budget-card";
 import { BudgetDialog } from "@/components/budget-dialog";
 import { DeleteBudgetDialog } from "@/components/delete-budget-dialog";
+import { BudgetExpenseDialog } from "@/components/budget-expense-dialog";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,21 +35,26 @@ import {
   AlertDescription,
   AlertAction,
 } from "@/components/ui/alert";
-import { Budget, api } from "@/lib/api";
+import { Budget, BankVault, api } from "@/lib/api";
+import { getCategoryIcon } from "@/components/category-select";
 
 function BudgetsContent() {
   const searchParams = useSearchParams();
 
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [vaults, setVaults] = useState<BankVault[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [filterCategory, setFilterCategory] = useState<string>("ALL");
 
   // Modal dialog states
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [budgetToEdit, setBudgetToEdit] = useState<Budget | null>(null);
   const [budgetToDelete, setBudgetToDelete] = useState<Budget | null>(null);
+  const [isTxDialogOpen, setIsTxDialogOpen] = useState(false);
+  const [selectedBudgetForTx, setSelectedBudgetForTx] = useState<Budget | null>(null);
 
   // Check URL query action for creating budget directly
   useEffect(() => {
@@ -52,8 +69,12 @@ function BudgetsContent() {
     setIsLoading(true);
     setFetchError(null);
     try {
-      const data = await api.getBudgets();
-      setBudgets(data.budgets || []);
+      const [budgetsRes, vaultsRes] = await Promise.all([
+        api.getBudgets(),
+        api.getVaults().catch(() => ({ vaults: [], summary: { totalBalance: 0, count: 0 } })),
+      ]);
+      setBudgets(budgetsRes.budgets || []);
+      setVaults(vaultsRes.vaults || []);
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -83,6 +104,45 @@ function BudgetsContent() {
     void fetchBudgets();
   };
 
+  const formatCurrency = useCallback((val: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(val);
+  }, []);
+
+  // Summary statistics matching Goals
+  const summary = useMemo(() => {
+    const totalBudget = budgets.reduce(
+      (acc, b) => acc + (b.effectiveAmount || b.amount || 0),
+      0
+    );
+    const totalSpent = budgets.reduce((acc, b) => acc + (b.spent || 0), 0);
+    const overallPercentage =
+      totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+    const overbudgetCount = budgets.filter(
+      (b) => b.status === "OVERBUDGET" || b.percentage >= 100
+    ).length;
+    const warningCount = budgets.filter(
+      (b) =>
+        b.status === "WARNING" ||
+        (b.percentage >= 75 && b.percentage < 100)
+    ).length;
+    const onTrackCount = budgets.filter(
+      (b) => b.status === "ON_TRACK" || b.percentage < 75
+    ).length;
+
+    return {
+      totalBudget,
+      totalSpent,
+      overallPercentage,
+      overbudgetCount,
+      warningCount,
+      onTrackCount,
+    };
+  }, [budgets]);
+
   const filteredBudgets = useMemo(() => {
     return budgets.filter((b) => {
       const matchesSearch =
@@ -92,13 +152,16 @@ function BudgetsContent() {
       const matchesStatus =
         filterStatus === "ALL" || b.status === filterStatus;
 
-      return matchesSearch && matchesStatus;
+      const matchesCategory =
+        filterCategory === "ALL" || b.categorySlug === filterCategory;
+
+      return matchesSearch && matchesStatus && matchesCategory;
     });
-  }, [budgets, searchQuery, filterStatus]);
+  }, [budgets, searchQuery, filterStatus, filterCategory]);
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-6">
-      {/* Top Header matching Vaults Page */}
+      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
@@ -124,17 +187,63 @@ function BudgetsContent() {
             Refresh
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => {
-              setBudgetToEdit(null);
-              setIsAddOpen(true);
-            }}
-            className="gap-1.5 text-xs font-semibold cursor-pointer h-9"
-          >
-            <PlusIcon className="size-4" />
-            New Budget
-          </Button>
+          {vaults.length === 0 ? (
+            <HoverCard>
+              <HoverCardTrigger
+                delay={200}
+                closeDelay={150}
+                render={
+                  <span
+                    className="inline-block cursor-not-allowed"
+                    tabIndex={0}
+                  />
+                }
+              >
+                <Button
+                  disabled
+                  size="sm"
+                  className="gap-1.5 text-xs font-semibold h-9 pointer-events-none"
+                >
+                  <PlusIcon className="size-4" />
+                  New Budget
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardContent side="bottom" align="end" className="w-72 p-3 text-xs">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <AlertCircleIcon className="size-4" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-semibold text-foreground">
+                      Vault Required
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      You need to create at least one vault before setting up budgets.
+                    </p>
+                    <Link
+                      href="/dashboard/vaults?action=new"
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline pt-0.5"
+                    >
+                      <span>Create a vault</span>
+                      <ArrowRightIcon className="size-3" />
+                    </Link>
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => {
+                setBudgetToEdit(null);
+                setIsAddOpen(true);
+              }}
+              className="gap-1.5 text-xs font-semibold cursor-pointer h-9"
+            >
+              <PlusIcon className="size-4" />
+              New Budget
+            </Button>
+          )}
         </div>
       </div>
 
@@ -158,6 +267,72 @@ function BudgetsContent() {
             </Button>
           </AlertAction>
         </Alert>
+      )}
+
+      {/* Summary KPI Cards matching Goals */}
+      {budgets.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-[11px] font-medium">Total Spent</span>
+              <CoinsIcon className="size-3.5 text-rose-500" />
+            </div>
+            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+              {formatCurrency(summary.totalSpent)}
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              Across all categories
+            </div>
+          </div>
+
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-[11px] font-medium">Total Budget</span>
+              <TrendingUpIcon className="size-3.5 text-primary" />
+            </div>
+            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+              {formatCurrency(summary.totalBudget)}
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              Combined spending limit
+            </div>
+          </div>
+
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-[11px] font-medium">Budget Used</span>
+              <SparklesIcon className="size-3.5 text-amber-500" />
+            </div>
+            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+              {summary.overallPercentage}%
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              Overall monthly usage
+            </div>
+          </div>
+
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-[11px] font-medium">Budget Health</span>
+              <CheckCircle2Icon className="size-3.5 text-emerald-500" />
+            </div>
+            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+              {summary.onTrackCount}{" "}
+              <span className="text-xs font-normal text-muted-foreground">
+                / {budgets.length} on track
+              </span>
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              {summary.warningCount + summary.overbudgetCount > 0 ? (
+                <span className="text-rose-600 dark:text-rose-400 font-medium">
+                  {summary.warningCount + summary.overbudgetCount} need attention
+                </span>
+              ) : (
+                "All within safe limits"
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Toolbar: Search & Status Filters */}
@@ -208,6 +383,41 @@ function BudgetsContent() {
         </div>
       </div>
 
+      {/* Category Pills Filter */}
+      {budgets.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <Button
+            type="button"
+            size="xs"
+            variant={filterCategory === "ALL" ? "secondary" : "ghost"}
+            onClick={() => setFilterCategory("ALL")}
+            className="rounded-md text-[11px] h-7 cursor-pointer"
+          >
+            All Categories
+          </Button>
+          {Array.from(new Set(budgets.map((b) => b.categorySlug))).map((catSlug) => {
+            const count = budgets.filter((b) => b.categorySlug === catSlug).length;
+            const CategoryIcon = getCategoryIcon(catSlug);
+            return (
+              <Button
+                key={catSlug}
+                type="button"
+                size="xs"
+                variant={filterCategory === catSlug ? "secondary" : "ghost"}
+                onClick={() => setFilterCategory(catSlug)}
+                className="rounded-md text-[11px] h-7 gap-1.5 cursor-pointer capitalize"
+              >
+                <CategoryIcon className="size-3" />
+                <span>{catSlug.replace(/_/g, " ")}</span>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  ({count})
+                </span>
+              </Button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Budget Cards Grid or Empty State */}
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
@@ -217,11 +427,14 @@ function BudgetsContent() {
               className="rounded-xl border bg-card p-4 space-y-3 shadow-xs"
             >
               <div className="flex items-center justify-between">
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="size-7 rounded-lg" />
+                <div className="flex items-center gap-2.5">
+                  <Skeleton className="size-9 rounded-lg" />
+                  <Skeleton className="h-5 w-28" />
+                </div>
+                <Skeleton className="h-5 w-16 rounded-full" />
               </div>
-              <Skeleton className="h-7 w-36" />
-              <Skeleton className="h-28 w-full rounded-lg" />
+              <Skeleton className="h-6 w-36" />
+              <Skeleton className="h-2 w-full rounded-full" />
               <div className="flex justify-between pt-1">
                 <Skeleton className="h-3.5 w-20" />
                 <Skeleton className="h-3.5 w-20" />
@@ -235,6 +448,11 @@ function BudgetsContent() {
             <BudgetCard
               key={budget.id}
               budget={budget}
+              vaults={vaults}
+              onAddTransaction={(b) => {
+                setSelectedBudgetForTx(b);
+                setIsTxDialogOpen(true);
+              }}
               onEdit={(b) => {
                 setBudgetToEdit(b);
                 setIsAddOpen(true);
@@ -250,27 +468,73 @@ function BudgetsContent() {
             <WalletCardsIcon className="size-6" />
           </div>
           <h3 className="text-base font-semibold text-foreground">
-            {searchQuery || filterStatus !== "ALL"
+            {searchQuery || filterStatus !== "ALL" || filterCategory !== "ALL"
               ? "No matching budgets found"
               : "No Budgets Added Yet"}
           </h3>
           <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-            {searchQuery || filterStatus !== "ALL"
-              ? "Try adjusting your search query or reset the status filter."
+            {searchQuery || filterStatus !== "ALL" || filterCategory !== "ALL"
+              ? "Try adjusting your search query or reset the filters."
               : "Set your first monthly spending limit to start controlling expenses for food, transport, entertainment, and more."}
           </p>
-          {!searchQuery && filterStatus === "ALL" && (
-            <Button
-              size="sm"
-              onClick={() => {
-                setBudgetToEdit(null);
-                setIsAddOpen(true);
-              }}
-              className="mt-4 gap-1.5 text-xs font-semibold cursor-pointer"
-            >
-              <PlusIcon className="size-4" />
-              Add Your First Budget
-            </Button>
+          {!searchQuery && filterStatus === "ALL" && filterCategory === "ALL" && (
+            vaults.length === 0 ? (
+              <HoverCard>
+                <HoverCardTrigger
+                  delay={200}
+                  closeDelay={150}
+                  render={
+                    <span
+                      className="inline-block cursor-not-allowed mt-4"
+                      tabIndex={0}
+                    />
+                  }
+                >
+                  <Button
+                    disabled
+                    size="sm"
+                    className="gap-1.5 text-xs font-semibold pointer-events-none"
+                  >
+                    <PlusIcon className="size-4" />
+                    Add Your First Budget
+                  </Button>
+                </HoverCardTrigger>
+                <HoverCardContent side="top" align="center" className="w-72 p-3 text-xs">
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                      <AlertCircleIcon className="size-4" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-semibold text-foreground">
+                        Vault Required
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        You need to create at least one vault before setting up budgets.
+                      </p>
+                      <Link
+                        href="/dashboard/vaults?action=new"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline pt-0.5"
+                      >
+                        <span>Create a vault</span>
+                        <ArrowRightIcon className="size-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setBudgetToEdit(null);
+                  setIsAddOpen(true);
+                }}
+                className="mt-4 gap-1.5 text-xs font-semibold cursor-pointer"
+              >
+                <PlusIcon className="size-4" />
+                Add Your First Budget
+              </Button>
+            )
           )}
         </div>
       )}
@@ -291,6 +555,17 @@ function BudgetsContent() {
         }}
         budget={budgetToDelete}
         onSuccess={handleBudgetDeleted}
+      />
+
+      {/* Dedicated Expense Dialog for Budget (matching Goals screenshot) */}
+      <BudgetExpenseDialog
+        open={isTxDialogOpen}
+        onOpenChange={setIsTxDialogOpen}
+        vaults={vaults}
+        budget={selectedBudgetForTx}
+        onSuccess={() => {
+          void fetchBudgets();
+        }}
       />
     </div>
   );

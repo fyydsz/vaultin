@@ -21,6 +21,7 @@ import {
   BanknoteIcon,
   ArrowUpRightIcon,
   ArrowDownRightIcon,
+  AlertCircleIcon,
 } from "lucide-react";
 
 import {
@@ -35,11 +36,16 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartBarStacked } from "@/components/ui/chart-bar-stacked";
 import { type ChartConfig } from "@/components/ui/chart";
-import { BankVault, Transaction, api } from "@/lib/api";
+import { BankVault, Transaction, Budget, api } from "@/lib/api";
 import { useCategoryStore } from "@/stores/category-store";
 import { getCategoryIcon } from "@/components/category-select";
 import { TransactionDialog } from "@/components/transaction-dialog";
 import { VaultDialog } from "@/components/vault-dialog";
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card";
 
 export type Granularity = "daily" | "monthly";
 
@@ -90,6 +96,7 @@ export default function DashboardOverviewPage() {
 
   const [vaults, setVaults] = useState<BankVault[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Dialog State
@@ -105,15 +112,17 @@ export default function DashboardOverviewPage() {
   const fetchDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [vaultsRes, txRes] = await Promise.all([
+      const [vaultsRes, txRes, budgetsRes] = await Promise.all([
         api.getVaults().catch(() => ({ vaults: [], summary: { totalBalance: 0, count: 0 } })),
         api.getTransactions({ limit: 500 }).catch(() => ({
           transactions: [],
           pagination: { page: 1, limit: 500, total: 0, totalPages: 1 },
         })),
+        api.getBudgets().catch(() => ({ budgets: [] })),
       ]);
       setVaults(vaultsRes.vaults || []);
       setTransactions(txRes.transactions || []);
+      setBudgets(budgetsRes.budgets || []);
     } catch (err) {
       console.error("Failed to load dashboard data:", err);
     } finally {
@@ -548,14 +557,61 @@ export default function DashboardOverviewPage() {
             <span>Add Vault</span>
           </Button>
 
-          <Button
-            size="sm"
-            onClick={() => setIsTxDialogOpen(true)}
-            className="h-8 sm:h-9 gap-1.5 text-xs font-semibold shadow-xs cursor-pointer px-2.5 sm:px-3"
-          >
-            <PlusIcon className="size-3.5" />
-            <span>New Transaction</span>
-          </Button>
+          {vaults.length === 0 ? (
+            <HoverCard>
+              <HoverCardTrigger
+                delay={200}
+                closeDelay={150}
+                render={
+                  <span
+                    className="inline-block cursor-not-allowed"
+                    tabIndex={0}
+                  />
+                }
+              >
+                <Button
+                  disabled
+                  size="sm"
+                  className="h-8 sm:h-9 gap-1.5 text-xs font-semibold shadow-xs px-2.5 sm:px-3 pointer-events-none"
+                >
+                  <PlusIcon className="size-3.5" />
+                  <span>New Transaction</span>
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardContent side="bottom" align="end" className="w-72 p-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <AlertCircleIcon className="size-4" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-semibold text-foreground">
+                      Vault Required
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      You need to create at least one vault before recording transactions.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsVaultDialogOpen(true)}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline pt-0.5 cursor-pointer"
+                    >
+                      <span>Add a vault</span>
+                      <ArrowRightIcon className="size-3" />
+                    </button>
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          ) : (
+            <Button
+              size="sm"
+              onClick={() => setIsTxDialogOpen(true)}
+              className="h-8 sm:h-9 gap-1.5 text-xs font-semibold shadow-xs cursor-pointer px-2.5 sm:px-3"
+            >
+              <PlusIcon className="size-3.5" />
+              <span>New Transaction</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1125,6 +1181,7 @@ export default function DashboardOverviewPage() {
         open={isTxDialogOpen}
         onOpenChange={setIsTxDialogOpen}
         vaults={vaults}
+        budgets={budgets}
         onSuccess={() => fetchDashboardData()}
       />
 
