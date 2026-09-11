@@ -424,8 +424,11 @@ async function request<T>(
   if (!response.ok) {
     if (response.status === 401 && typeof window !== "undefined") {
       const currentPath = window.location.pathname;
-      if (!currentPath.startsWith("/login") && !currentPath.startsWith("/signup")) {
-        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      if (
+        !currentPath.startsWith("/login") &&
+        !currentPath.startsWith("/signup") &&
+        currentPath !== "/"
+      ) {
         window.location.replace("/login");
       }
     }
