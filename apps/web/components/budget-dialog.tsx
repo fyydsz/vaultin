@@ -250,7 +250,9 @@ function BudgetForm({ budgetToEdit, onSuccess, onClose }: BudgetFormProps) {
         {errorMessage && (
           <Alert variant="destructive" className="animate-in fade-in-50">
             <AlertCircleIcon className="size-4 shrink-0" />
-            <AlertTitle className="font-semibold">Something went wrong</AlertTitle>
+            <AlertTitle className="font-semibold">
+              {isEditing ? "Failed to update budget" : "Failed to create budget"}
+            </AlertTitle>
             <AlertDescription className="text-xs text-destructive/90">
               {errorMessage}
             </AlertDescription>

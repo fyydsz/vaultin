@@ -486,7 +486,7 @@ export default function VaultDetailPage() {
       <div className="flex min-h-[400px] flex-1 flex-col items-center justify-center p-6 max-w-lg mx-auto">
         <Alert variant="destructive" className="mb-4">
           <AlertCircleIcon className="size-4 shrink-0" />
-          <AlertTitle className="font-semibold">Something went wrong</AlertTitle>
+          <AlertTitle className="font-semibold">Failed to load vault</AlertTitle>
           <AlertDescription className="text-xs text-destructive/90">
             {fetchError || "The requested vault could not be loaded."}
           </AlertDescription>

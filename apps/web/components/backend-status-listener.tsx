@@ -36,10 +36,13 @@ export function BackendStatusListener() {
       return;
     }
 
-    const message =
-      detail?.message || "An Unexpected Error Occurred";
+    const isBackendDown = detail?.isBackendDown;
+    const title = isBackendDown ? "Connection Error" : "Action Failed";
 
-    toast.error("Something went wrong", {
+    const message =
+      detail?.message || "An unexpected error occurred";
+
+    toast.error(title, {
       id: BACKEND_TOAST_ID,
       description: message,
       position: "bottom-right",

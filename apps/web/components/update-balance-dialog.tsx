@@ -653,7 +653,7 @@ function UpdateBalanceForm({
         {errorMessage && (
           <Alert variant="destructive" className="animate-in fade-in-50">
             <AlertCircleIcon className="size-4 shrink-0" />
-            <AlertTitle className="font-semibold">Something went wrong</AlertTitle>
+            <AlertTitle className="font-semibold">Failed to update balance</AlertTitle>
             <AlertDescription className="text-xs text-destructive/90">{errorMessage}</AlertDescription>
           </Alert>
         )}

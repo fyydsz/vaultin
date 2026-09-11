@@ -267,13 +267,16 @@ export function SignupForm({
             <Alert variant="destructive" className="animate-in fade-in-50">
               <AlertCircleIcon className="size-4 shrink-0" />
               <AlertTitle className="font-semibold">Something went wrong</AlertTitle>
+              <AlertDescription className="text-xs text-destructive/90">
+                Unable to connect to the server. Please check your connection and try again.
+              </AlertDescription>
             </Alert>
           )}
 
           {error && !isBackendError && (
             <Alert variant="destructive" className="animate-in fade-in-50">
               <AlertCircleIcon className="size-4 shrink-0" />
-              <AlertTitle className="font-semibold">Something went wrong</AlertTitle>
+              <AlertTitle className="font-semibold">Sign up failed</AlertTitle>
               <AlertDescription className="text-xs text-destructive/90">{error}</AlertDescription>
             </Alert>
           )}
