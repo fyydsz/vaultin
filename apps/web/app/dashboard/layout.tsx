@@ -21,6 +21,7 @@ import {
 import { ModeToggle } from "@/components/mode-toggle";
 import { NavUserMobile } from "@/components/nav-user-mobile";
 import { MobileNav } from "@/components/mobile-nav";
+import { MobileSubNav } from "@/components/mobile-sub-nav";
 import { EmailVerificationBanner } from "@/components/email-verification-banner";
 import { GalleryVerticalEndIcon } from "lucide-react";
 import { IS_PREVIEW } from "@/lib/env";
@@ -191,6 +192,7 @@ export default function DashboardLayout({
         <EmailVerificationBanner />
 
         <div className="flex flex-1 flex-col pb-24 md:pb-6">
+          <MobileSubNav />
           {children}
         </div>
 

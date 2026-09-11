@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutGridIcon,
-  TrendingUpIcon,
   CreditCardIcon,
   ReceiptTextIcon,
-  PiggyBankIcon,
+  TargetIcon,
   UsersIcon,
 } from "lucide-react";
 
@@ -18,76 +17,63 @@ export const mobileNavItems = [
     name: "Home",
     url: "/dashboard",
     icon: LayoutGridIcon,
+    isActive: (pathname: string) => pathname === "/dashboard",
   },
-    {
+  {
     name: "Vaults",
     url: "/dashboard/vaults",
     icon: CreditCardIcon,
+    isActive: (pathname: string) => pathname.startsWith("/dashboard/vaults"),
   },
   {
-    name: "Cashflow",
-    url: "/dashboard/cashflow",
-    icon: TrendingUpIcon,
-  },
-  {
-    name: "Transactions",
+    name: "Activity",
     url: "/dashboard/transactions",
     icon: ReceiptTextIcon,
+    isActive: (pathname: string) =>
+      pathname.startsWith("/dashboard/transactions") ||
+      pathname.startsWith("/dashboard/cashflow"),
   },
   {
-    name: "Budget",
-    url: "/dashboard/budgets",
-    icon: PiggyBankIcon,
+    name: "Planning",
+    url: "/dashboard/goals",
+    icon: TargetIcon,
+    isActive: (pathname: string) =>
+      pathname.startsWith("/dashboard/goals") ||
+      pathname.startsWith("/dashboard/budgets"),
   },
   {
     name: "Socials",
     url: "/dashboard/socials",
     icon: UsersIcon,
+    isActive: (pathname: string) => pathname.startsWith("/dashboard/socials"),
   },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
-  const navContainerRef = useRef<HTMLElement>(null);
-  const activeItemRef = useRef<HTMLAnchorElement>(null);
-
-  // Auto-scroll the active tab into the center of the mobile navigation bar
-  useEffect(() => {
-    if (activeItemRef.current) {
-      activeItemRef.current.scrollIntoView({
-        behavior: "smooth",
-        inline: "center",
-        block: "nearest",
-      });
-    }
-  }, [pathname]);
 
   return (
     <nav
-      ref={navContainerRef}
       aria-label="Mobile navigation"
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex md:hidden items-center gap-1 bg-background/85 dark:bg-card/85 backdrop-blur-xl border border-border/80 text-muted-foreground p-1.5 rounded-full shadow-lg dark:shadow-2xl max-w-[95vw] overflow-x-auto no-scrollbar ring-1 ring-border/40"
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex md:hidden items-center justify-between gap-1 bg-background/90 dark:bg-card/90 backdrop-blur-xl border border-border/80 text-muted-foreground p-1.5 rounded-full shadow-lg dark:shadow-2xl w-[calc(100%-1.5rem)] max-w-md ring-1 ring-border/40"
     >
       {mobileNavItems.map((item) => {
-        const isActive =
-          pathname === item.url ||
-          (item.url !== "/dashboard" && pathname.startsWith(item.url));
+        const isActive = item.isActive(pathname);
         const Icon = item.icon;
 
         return (
           <Link
             key={item.name}
-            ref={isActive ? activeItemRef : undefined}
             href={item.url}
             className={cn(
-              "flex flex-col items-center justify-center min-w-[56px] py-1.5 px-2.5 rounded-full transition-all duration-200 select-none",
+              "flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-full transition-all duration-200 select-none min-w-0",
               isActive
                 ? "bg-primary text-primary-foreground font-semibold shadow-xs scale-100"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95"
             )}
           >
-            <Icon className={cn("size-5 mb-0.5", isActive ? "stroke-2" : "stroke-1.5")} />
-            <span className="text-[10px] tracking-tight leading-none">
+            <Icon className={cn("size-4.5 mb-0.5 shrink-0", isActive ? "stroke-2" : "stroke-1.5")} />
+            <span className="text-[10px] tracking-tight leading-none truncate max-w-full">
               {item.name}
             </span>
           </Link>
