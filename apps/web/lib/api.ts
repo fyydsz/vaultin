@@ -244,6 +244,11 @@ export interface ContributeGoalInput {
   accountId?: string;
 }
 
+export interface WithdrawGoalInput {
+  amount: number;
+  accountId: string;
+}
+
 export interface GoalInvitation {
   invitationId: string;
   goal: {
@@ -812,10 +817,36 @@ export const api = {
   },
 
   async deleteGoal(
-    id: string
-  ): Promise<{ success: boolean; message: string }> {
-    return request<{ success: boolean; message: string }>(`/goals/${id}`, {
+    id: string,
+    refundAccountId?: string
+  ): Promise<{ success: boolean; message: string; refundedAmount?: number }> {
+    const url = refundAccountId
+      ? `/goals/${id}?refundAccountId=${encodeURIComponent(refundAccountId)}`
+      : `/goals/${id}`;
+    return request<{ success: boolean; message: string; refundedAmount?: number }>(url, {
       method: "DELETE",
+    });
+  },
+
+  async withdrawGoal(
+    id: string,
+    data: WithdrawGoalInput
+  ): Promise<{
+    message: string;
+    currentAmount: number;
+    targetAmount: number;
+    totalContributed: number;
+    status: string;
+  }> {
+    return request<{
+      message: string;
+      currentAmount: number;
+      targetAmount: number;
+      totalContributed: number;
+      status: string;
+    }>(`/goals/${id}/withdraw`, {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   },
 

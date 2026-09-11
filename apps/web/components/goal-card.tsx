@@ -12,6 +12,7 @@ import {
   Clock,
   Coins,
   AlertCircle,
+  ArrowDownToLine,
 } from "lucide-react";
 import {
   Card,
@@ -88,6 +89,7 @@ interface GoalCardProps {
   goal: Goal;
   vaults?: BankVault[];
   onContribute: (goal: Goal) => void;
+  onWithdraw?: (goal: Goal) => void;
   onEdit: (goal: Goal) => void;
   onDelete: (goal: Goal) => void;
 }
@@ -96,6 +98,7 @@ export function GoalCard({
   goal,
   vaults = [],
   onContribute,
+  onWithdraw,
   onEdit,
   onDelete,
 }: GoalCardProps) {
@@ -248,7 +251,7 @@ export function GoalCard({
                 <MoreVertical className="size-3.5" />
                 <span className="sr-only">Actions</span>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem
                   onClick={() => onEdit(goal)}
                   className="gap-2 text-xs cursor-pointer"
@@ -256,6 +259,15 @@ export function GoalCard({
                   <Pencil className="size-3.5" />
                   Edit Goal
                 </DropdownMenuItem>
+                {goal.currentAmount > 0 && onWithdraw && (
+                  <DropdownMenuItem
+                    onClick={() => onWithdraw(goal)}
+                    className="gap-2 text-xs text-amber-600 dark:text-amber-400 focus:text-amber-600 cursor-pointer"
+                  >
+                    <ArrowDownToLine className="size-3.5" />
+                    Withdraw Savings
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => onDelete(goal)}
@@ -398,15 +410,28 @@ export function GoalCard({
         {/* Action Button */}
         <div className="flex items-center gap-1.5 shrink-0 ml-2">
           {isCompleted ? (
-            <Button
-              size="xs"
-              variant="outline"
-              disabled
-              className="h-7 gap-1 text-[11px] font-medium border-emerald-500/30 text-emerald-600 dark:text-emerald-400 pointer-events-none"
-            >
-              <CheckCircle2 className="size-3.5" />
-              <span>Complete</span>
-            </Button>
+            <div className="flex items-center gap-1.5">
+              <Button
+                size="xs"
+                variant="outline"
+                disabled
+                className="h-7 gap-1 text-[11px] font-medium border-emerald-500/30 text-emerald-600 dark:text-emerald-400 pointer-events-none"
+              >
+                <CheckCircle2 className="size-3.5" />
+                <span>Complete</span>
+              </Button>
+              {goal.currentAmount > 0 && onWithdraw && (
+                <Button
+                  size="xs"
+                  variant="outline"
+                  onClick={() => onWithdraw(goal)}
+                  className="h-7 gap-1 text-[11px] font-medium border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+                >
+                  <ArrowDownToLine className="size-3" />
+                  <span>Withdraw</span>
+                </Button>
+              )}
+            </div>
           ) : vaults.length === 0 ? (
             <HoverCard>
               <HoverCardTrigger

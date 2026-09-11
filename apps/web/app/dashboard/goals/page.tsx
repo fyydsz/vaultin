@@ -19,6 +19,7 @@ import {
 import { GoalCard, GOAL_CATEGORY_CONFIG } from "@/components/goal-card";
 import { GoalDialog } from "@/components/goal-dialog";
 import { ContributeGoalDialog } from "@/components/contribute-goal-dialog";
+import { WithdrawGoalDialog } from "@/components/withdraw-goal-dialog";
 import { DeleteGoalDialog } from "@/components/delete-goal-dialog";
 import {
   HoverCard,
@@ -54,6 +55,7 @@ function GoalsContent() {
   const [goalToEdit, setGoalToEdit] = useState<Goal | null>(null);
   const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null);
   const [goalToContribute, setGoalToContribute] = useState<Goal | null>(null);
+  const [goalToWithdraw, setGoalToWithdraw] = useState<Goal | null>(null);
 
   // Handle URL query action for directly opening the creation dialog
   useEffect(() => {
@@ -437,6 +439,7 @@ function GoalsContent() {
               goal={goal}
               vaults={vaults}
               onContribute={(g) => setGoalToContribute(g)}
+              onWithdraw={(g) => setGoalToWithdraw(g)}
               onEdit={(g) => {
                 setGoalToEdit(g);
                 setIsAddOpen(true);
@@ -544,6 +547,19 @@ function GoalsContent() {
         }}
       />
 
+      {/* Withdraw Savings Dialog */}
+      <WithdrawGoalDialog
+        open={!!goalToWithdraw}
+        onOpenChange={(open) => {
+          if (!open) setGoalToWithdraw(null);
+        }}
+        goal={goalToWithdraw}
+        vaults={vaults}
+        onSuccess={() => {
+          void fetchGoalsAndVaults();
+        }}
+      />
+
       {/* Delete Goal Confirmation Dialog */}
       <DeleteGoalDialog
         open={!!goalToDelete}
@@ -551,6 +567,7 @@ function GoalsContent() {
           if (!open) setGoalToDelete(null);
         }}
         goal={goalToDelete}
+        vaults={vaults}
         onSuccess={handleGoalDeleted}
       />
     </div>
