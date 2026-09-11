@@ -31,6 +31,16 @@ interface CategoryState {
     color?: string;
     description?: string;
   }) => Promise<CategoryItem>;
+  updateCategory: (
+    id: string,
+    data: {
+      name?: string;
+      type?: "EXPENSE" | "INCOME";
+      icon?: string;
+      color?: string;
+      description?: string;
+    }
+  ) => Promise<CategoryItem>;
   deleteCategory: (id: string) => Promise<void>;
 }
 
@@ -76,11 +86,28 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
 
   createCategory: async (data) => {
     const res = await api.createCategory(data);
-    const created = res.category;
+    const created = {
+      ...res.category,
+      isDefault: false,
+    };
     set((state) => ({
       categories: [...state.categories, created],
     }));
     return created;
+  },
+
+  updateCategory: async (id, data) => {
+    const res = await api.updateCategory(id, data);
+    const updated = {
+      ...res.category,
+      isDefault: false,
+    };
+    set((state) => ({
+      categories: state.categories.map((c) =>
+        c.id === id ? { ...c, ...updated, isDefault: false } : c
+      ),
+    }));
+    return updated;
   },
 
   deleteCategory: async (id) => {

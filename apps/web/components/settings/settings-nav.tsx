@@ -24,6 +24,10 @@ const navItems = [
     href: "/dashboard/settings/labels",
   },
   {
+    title: "Categories",
+    href: "/dashboard/settings/categories",
+  },
+  {
     title: "Notifications",
     href: "/dashboard/settings/notifications",
   },

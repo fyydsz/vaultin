@@ -656,6 +656,22 @@ export const api = {
     });
   },
 
+  async updateCategory(
+    id: string,
+    data: {
+      name?: string;
+      type?: "EXPENSE" | "INCOME";
+      icon?: string;
+      color?: string;
+      description?: string;
+    }
+  ): Promise<{ message: string; category: CategoryItem }> {
+    return request<{ message: string; category: CategoryItem }>(`/categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
   async deleteCategory(id: string): Promise<{ success: boolean; message: string }> {
     return request<{ success: boolean; message: string }>(`/categories/${id}`, {
       method: "DELETE",
