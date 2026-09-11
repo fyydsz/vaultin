@@ -175,6 +175,96 @@ export interface UpdateBudgetInput {
   icon?: string;
 }
 
+export type GoalCategory =
+  | "couple"
+  | "travel"
+  | "emergency"
+  | "gadget"
+  | "investment"
+  | "education"
+  | "general";
+
+export interface GoalMember {
+  id: string;
+  name: string;
+  username?: string | null;
+  image?: string | null;
+  role: string;
+  status: string;
+  totalContributed: number;
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  description?: string | null;
+  targetAmount: number;
+  currentAmount: number;
+  category: GoalCategory | string;
+  icon?: string | null;
+  deadline?: string | null;
+  creatorId: string;
+  isShared: boolean;
+  status: "active" | "completed" | "cancelled" | string;
+  progressPercent: number;
+  members?: GoalMember[];
+  creator?: {
+    name: string;
+    username?: string | null;
+    email: string;
+    image?: string | null;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateGoalInput {
+  title: string;
+  description?: string;
+  targetAmount: number;
+  category?: GoalCategory | string;
+  icon?: string;
+  deadline?: string;
+  isShared?: boolean;
+  invitedFriendIds?: string[];
+}
+
+export interface UpdateGoalInput {
+  title?: string;
+  description?: string;
+  targetAmount?: number;
+  category?: GoalCategory | string;
+  icon?: string;
+  deadline?: string;
+  status?: "active" | "completed" | "cancelled";
+}
+
+export interface ContributeGoalInput {
+  amount: number;
+  accountId?: string;
+}
+
+export interface GoalInvitation {
+  invitationId: string;
+  goal: {
+    id: string;
+    title: string;
+    description?: string | null;
+    targetAmount: number;
+    currentAmount: number;
+    category: string;
+    icon?: string | null;
+    deadline?: string | null;
+    creator: {
+      name: string;
+      username?: string | null;
+      email: string;
+      image?: string | null;
+    };
+  };
+  invitedAt: string;
+}
+
 export interface Transaction {
   id: string;
   userId: string;
@@ -661,6 +751,109 @@ export const api = {
     return request<{ success: boolean; message: string }>(`/budgets/${id}`, {
       method: "DELETE",
     });
+  },
+
+  // Goal endpoints
+  async getGoals(query: { status?: string; isShared?: boolean } = {}): Promise<{
+    goals: Goal[];
+  }> {
+    const params = new URLSearchParams();
+    if (query.status) params.set("status", query.status);
+    if (typeof query.isShared === "boolean")
+      params.set("isShared", String(query.isShared));
+    const qs = params.toString();
+    return request<{ goals: Goal[] }>(`/goals${qs ? `?${qs}` : ""}`, {
+      method: "GET",
+    });
+  },
+
+  async getGoalById(id: string): Promise<{ goal: Goal }> {
+    return request<{ goal: Goal }>(`/goals/${id}`, {
+      method: "GET",
+    });
+  },
+
+  async createGoal(
+    data: CreateGoalInput
+  ): Promise<{ message: string; goal: Goal }> {
+    return request<{ message: string; goal: Goal }>("/goals", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateGoal(
+    id: string,
+    data: UpdateGoalInput
+  ): Promise<{ message: string; goal: Goal }> {
+    return request<{ message: string; goal: Goal }>(`/goals/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteGoal(
+    id: string
+  ): Promise<{ success: boolean; message: string }> {
+    return request<{ success: boolean; message: string }>(`/goals/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  async contributeGoal(
+    id: string,
+    data: ContributeGoalInput
+  ): Promise<{
+    message: string;
+    currentAmount: number;
+    targetAmount: number;
+    totalContributed: number;
+    status: string;
+  }> {
+    return request<{
+      message: string;
+      currentAmount: number;
+      targetAmount: number;
+      totalContributed: number;
+      status: string;
+    }>(`/goals/${id}/contribute`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getGoalInvitations(): Promise<{
+    invitations: GoalInvitation[];
+  }> {
+    return request<{ invitations: GoalInvitation[] }>("/goals/invitations", {
+      method: "GET",
+    });
+  },
+
+  async inviteGoalMembers(
+    id: string,
+    friendIds: string[]
+  ): Promise<{ message: string; invitedCount: number }> {
+    return request<{ message: string; invitedCount: number }>(
+      `/goals/${id}/invite`,
+      {
+        method: "POST",
+        body: JSON.stringify({ friendIds }),
+      }
+    );
+  },
+
+  async respondGoalInvitation(
+    id: string,
+    action: "accept" | "decline"
+  ): Promise<{ message: string; member: GoalMember }> {
+    return request<{ message: string; member: GoalMember }>(
+      `/goals/${id}/invitation`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ action }),
+      }
+    );
   },
 
   async updateProfile(data: {
