@@ -157,7 +157,7 @@ function GoalsContent() {
   }, [goals, searchQuery, filterStatus, filterCategory]);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="@container flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -268,55 +268,64 @@ function GoalsContent() {
 
       {/* Summary KPI Cards */}
       {goals.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+        <div className="grid grid-cols-1 @[320px]:grid-cols-2 @[700px]:grid-cols-4 gap-2.5 sm:gap-3">
+          <div className="rounded-xl border bg-card p-3 sm:p-3.5 shadow-2xs space-y-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-[11px] font-medium">Total Saved</span>
-              <CoinsIcon className="size-3.5 text-emerald-500" />
+              <span className="text-[11px] font-medium truncate">Total Saved</span>
+              <CoinsIcon className="size-3.5 text-emerald-500 shrink-0" />
             </div>
-            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+            <div
+              className="text-sm sm:text-base @[850px]:text-lg font-bold text-foreground font-mono truncate"
+              title={formatCurrency(summary.totalSaved)}
+            >
               {formatCurrency(summary.totalSaved)}
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground truncate">
               Accumulated in goals
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-[11px] font-medium">Total Target</span>
-              <TrendingUpIcon className="size-3.5 text-primary" />
+              <span className="text-[11px] font-medium truncate">Total Target</span>
+              <TrendingUpIcon className="size-3.5 text-primary shrink-0" />
             </div>
-            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+            <div
+              className="text-sm sm:text-base @[850px]:text-lg font-bold text-foreground font-mono truncate"
+              title={formatCurrency(summary.totalTarget)}
+            >
               {formatCurrency(summary.totalTarget)}
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground truncate">
               Across all milestones
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-[11px] font-medium">Progress</span>
-              <SparklesIcon className="size-3.5 text-amber-500" />
+              <span className="text-[11px] font-medium truncate">Progress</span>
+              <SparklesIcon className="size-3.5 text-amber-500 shrink-0" />
             </div>
-            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+            <div className="text-sm sm:text-base @[850px]:text-lg font-bold text-foreground font-mono truncate">
               {summary.overallPercentage}%
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground truncate">
               Overall completion
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-[11px] font-medium">Milestones</span>
-              <CheckCircle2Icon className="size-3.5 text-primary" />
+              <span className="text-[11px] font-medium truncate">Milestones</span>
+              <CheckCircle2Icon className="size-3.5 text-primary shrink-0" />
             </div>
-            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
-              {summary.completedCount} <span className="text-xs font-normal text-muted-foreground">/ {goals.length}</span>
+            <div className="text-sm sm:text-base @[850px]:text-lg font-bold text-foreground font-mono truncate">
+              {summary.completedCount}{" "}
+              <span className="text-xs font-normal text-muted-foreground">
+                / {goals.length}
+              </span>
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground truncate">
               {summary.activeCount} active in progress
             </div>
           </div>
@@ -409,11 +418,11 @@ function GoalsContent() {
 
       {/* Goals Grid or Loading / Empty State */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-wrap gap-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-xl border bg-card p-4 space-y-3 shadow-xs"
+              className="w-full sm:w-[360px] max-w-full rounded-xl border bg-card p-4 space-y-3 shadow-xs"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -432,20 +441,21 @@ function GoalsContent() {
           ))}
         </div>
       ) : filteredGoals.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-wrap gap-4">
           {filteredGoals.map((goal) => (
-            <GoalCard
-              key={goal.id}
-              goal={goal}
-              vaults={vaults}
-              onContribute={(g) => setGoalToContribute(g)}
-              onWithdraw={(g) => setGoalToWithdraw(g)}
-              onEdit={(g) => {
-                setGoalToEdit(g);
-                setIsAddOpen(true);
-              }}
-              onDelete={(g) => setGoalToDelete(g)}
-            />
+            <div key={goal.id} className="w-full sm:w-[360px] max-w-full">
+              <GoalCard
+                goal={goal}
+                vaults={vaults}
+                onContribute={(g) => setGoalToContribute(g)}
+                onWithdraw={(g) => setGoalToWithdraw(g)}
+                onEdit={(g) => {
+                  setGoalToEdit(g);
+                  setIsAddOpen(true);
+                }}
+                onDelete={(g) => setGoalToDelete(g)}
+              />
+            </div>
           ))}
         </div>
       ) : (

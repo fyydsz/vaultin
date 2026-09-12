@@ -396,7 +396,7 @@ export default function CashflowPage() {
   }, [scopedTransactions, period, anchorDate, categories]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
+    <div className="@container flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
       {/* Top Header & Interactive Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-0.5">
         <div>
@@ -530,9 +530,9 @@ export default function CashflowPage() {
       </div>
 
       {/* KPI Financial Metric Summary Cards (Compact & Low-Profile) */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 @[320px]:grid-cols-2 @[700px]:grid-cols-4 gap-2 sm:gap-3">
         {/* Total Inflow */}
-        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs min-w-0 overflow-hidden">
           <div className="flex items-center justify-between gap-1">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
               Total Inflow
@@ -541,11 +541,14 @@ export default function CashflowPage() {
               <ArrowUpRightIcon className="size-3 sm:size-3.5" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2">
+          <div className="mt-1.5 sm:mt-2 min-w-0">
             {isLoading ? (
               <Skeleton className="h-5 sm:h-6 w-20 sm:w-28" />
             ) : (
-              <div className="font-mono text-sm sm:text-base md:text-lg font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
+              <div
+                className="font-mono text-sm sm:text-base @[850px]:text-lg font-bold text-emerald-600 dark:text-emerald-400 truncate"
+                title={`+${formatIDR(periodTotalIncome)}`}
+              >
                 +{formatIDR(periodTotalIncome)}
               </div>
             )}
@@ -556,7 +559,7 @@ export default function CashflowPage() {
         </div>
 
         {/* Total Outflow */}
-        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs min-w-0 overflow-hidden">
           <div className="flex items-center justify-between gap-1">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
               Total Outflow
@@ -565,11 +568,14 @@ export default function CashflowPage() {
               <ArrowDownRightIcon className="size-3 sm:size-3.5" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2">
+          <div className="mt-1.5 sm:mt-2 min-w-0">
             {isLoading ? (
               <Skeleton className="h-5 sm:h-6 w-20 sm:w-28" />
             ) : (
-              <div className="font-mono text-sm sm:text-base md:text-lg font-bold text-rose-600 dark:text-rose-400 tracking-tight">
+              <div
+                className="font-mono text-sm sm:text-base @[850px]:text-lg font-bold text-rose-600 dark:text-rose-400 truncate"
+                title={`-${formatIDR(periodTotalExpense)}`}
+              >
                 -{formatIDR(periodTotalExpense)}
               </div>
             )}
@@ -580,7 +586,7 @@ export default function CashflowPage() {
         </div>
 
         {/* Net Cashflow */}
-        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs min-w-0 overflow-hidden">
           <div className="flex items-center justify-between gap-1">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
               Net Cashflow
@@ -589,18 +595,19 @@ export default function CashflowPage() {
               <ActivityIcon className="size-3 sm:size-3.5" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2">
+          <div className="mt-1.5 sm:mt-2 min-w-0">
             {isLoading ? (
               <Skeleton className="h-5 sm:h-6 w-20 sm:w-28" />
             ) : (
               <div
-                className={`font-mono text-sm sm:text-base md:text-lg font-bold tracking-tight ${
+                className={`font-mono text-sm sm:text-base @[850px]:text-lg font-bold truncate ${
                   periodNetCashflow > 0
                     ? "text-emerald-600 dark:text-emerald-400"
                     : periodNetCashflow < 0
                     ? "text-rose-600 dark:text-rose-400"
                     : "text-foreground"
                 }`}
+                title={`${periodNetCashflow > 0 ? "+" : periodNetCashflow < 0 ? "-" : ""}${formatIDR(Math.abs(periodNetCashflow))}`}
               >
                 {periodNetCashflow > 0 ? "+" : periodNetCashflow < 0 ? "-" : ""}
                 {formatIDR(Math.abs(periodNetCashflow))}
@@ -617,7 +624,7 @@ export default function CashflowPage() {
         </div>
 
         {/* Savings Rate */}
-        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs min-w-0 overflow-hidden">
           <div className="flex items-center justify-between gap-1">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
               Savings Rate
@@ -626,7 +633,7 @@ export default function CashflowPage() {
               <PercentIcon className="size-3 sm:size-3.5" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2">
+          <div className="mt-1.5 sm:mt-2 min-w-0">
             {isLoading ? (
               <Skeleton className="h-5 sm:h-6 w-20 sm:w-24" />
             ) : (
@@ -717,7 +724,7 @@ export default function CashflowPage() {
       </Card>
 
       {/* TWO-COLUMN GRID: Cumulative Trajectory & Category Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 @[800px]:grid-cols-2 gap-6">
         {/* Cumulative Savings Trajectory */}
         <Card className="shadow-xs border-border/80 flex flex-col justify-between">
           <CardHeader className="pb-2">

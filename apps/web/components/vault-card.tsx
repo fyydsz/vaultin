@@ -161,7 +161,7 @@ export function VaultCard({
   const vaultAccentColor = vault.color || "#3B82F6";
 
   return (
-    <Card className="flex flex-col justify-between transition-all duration-200 hover:shadow-md border-border/80 relative group overflow-hidden bg-card/90">
+    <Card className="w-full h-full flex flex-col justify-between transition-all duration-200 hover:shadow-md border-border/80 relative group overflow-hidden bg-card/90">
       {/* Top Accent Color Bar */}
       <div
         className="h-1 w-full absolute top-0 left-0 right-0"
@@ -182,10 +182,10 @@ export function VaultCard({
               <CardTitle className="text-base font-bold text-foreground truncate">
                 {vault.name}
               </CardTitle>
-              <CardDescription className="text-[11px] flex items-center gap-1 font-medium mt-0.5">
-                <span>{vault.providerName}</span>
-                <span>•</span>
-                <span className="capitalize">
+              <CardDescription className="text-[11px] flex items-center gap-1 font-medium mt-0.5 truncate">
+                <span className="truncate">{vault.providerName}</span>
+                <span className="shrink-0">•</span>
+                <span className="capitalize truncate">
                   {vault.accountType.toLowerCase().replace("_", " ")}
                 </span>
               </CardDescription>
@@ -195,8 +195,8 @@ export function VaultCard({
           {/* Action Menu (Edit, Delete) */}
           <div className="flex items-center gap-1 shrink-0">
             {vault.isDefault && (
-              <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                <CheckCircle2 className="size-3" />
+              <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary shrink-0">
+                <CheckCircle2 className="size-3 shrink-0" />
                 Primary
               </span>
             )}
@@ -207,7 +207,7 @@ export function VaultCard({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="size-7 text-muted-foreground hover:text-foreground cursor-pointer"
+                    className="size-7 text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
                   />
                 }
               >
@@ -252,12 +252,15 @@ export function VaultCard({
         </div>
 
         {/* Nominal Balance & Update Balance Action */}
-        <div className="flex items-center justify-between gap-2 border-t border-border/50 pt-2">
-          <div>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center justify-between gap-2 border-t border-border/50 pt-2 min-w-0">
+          <div className="min-w-0">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate block">
               Current Balance
             </span>
-            <div className="text-base font-bold tracking-tight text-foreground font-mono">
+            <div
+              className="text-sm sm:text-base font-bold text-foreground font-mono truncate"
+              title={formattedBalance}
+            >
               {formattedBalance}
             </div>
           </div>
@@ -266,10 +269,11 @@ export function VaultCard({
             size="sm"
             variant="outline"
             onClick={() => onUpdateBalance(vault)}
-            className="gap-1.5 text-[11px] font-medium h-7 px-2.5 hover:bg-primary hover:text-primary-foreground transition-colors shrink-0 cursor-pointer shadow-2xs"
+            className="gap-1.5 text-[11px] font-medium h-7 px-2 sm:px-2.5 hover:bg-primary hover:text-primary-foreground transition-colors shrink-0 cursor-pointer shadow-2xs"
+            title="Update Balance"
           >
-            <RefreshCw className="size-3" />
-            Update Balance
+            <RefreshCw className="size-3 shrink-0" />
+            <span className="whitespace-nowrap">Update Balance</span>
           </Button>
         </div>
       </CardHeader>
@@ -353,29 +357,29 @@ export function VaultCard({
       </CardContent>
 
       {/* Footer with Vs Last Month Trend & View Details Link */}
-      <CardFooter className="flex items-center justify-between border-t border-border/50 py-2.5 px-4 text-xs">
-        <div className="flex items-center gap-1 font-medium text-muted-foreground text-[11px]">
+      <CardFooter className="flex items-center justify-between gap-2 border-t border-border/50 py-2.5 px-4 text-xs min-w-0">
+        <div className="flex items-center gap-1 font-medium text-muted-foreground text-[11px] min-w-0 truncate">
           {isVsLastMonthUp ? (
-            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold font-mono">
-              <TrendingUp className="size-3" />
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold font-mono shrink-0">
+              <TrendingUp className="size-3 shrink-0" />
               {formattedVsLastMonth}
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-semibold font-mono">
-              <TrendingDown className="size-3" />
+            <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-semibold font-mono shrink-0">
+              <TrendingDown className="size-3 shrink-0" />
               {formattedVsLastMonth}
             </span>
           )}
-          <span>vs last month</span>
+          <span className="whitespace-nowrap truncate">vs last month</span>
         </div>
 
         {/* View Details Link */}
         <Link
           href={`/dashboard/vaults/${vault.id}`}
-          className="group/link inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
+          className="group/link inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline hover:text-primary/80 transition-colors shrink-0 whitespace-nowrap"
         >
           <span>View Details</span>
-          <ArrowRight className="size-3 transition-transform group-hover/link:translate-x-0.5" />
+          <ArrowRight className="size-3 transition-transform group-hover/link:translate-x-0.5 shrink-0" />
         </Link>
       </CardFooter>
     </Card>

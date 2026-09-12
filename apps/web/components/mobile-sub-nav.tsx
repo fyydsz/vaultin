@@ -57,7 +57,7 @@ export function MobileSubNav() {
       ];
 
   return (
-    <div className="px-4 pt-2 pb-0.5 md:hidden animate-in fade-in-50">
+    <div className="px-4 sm:px-6 pt-2 pb-0.5 md:hidden animate-in fade-in-50">
       <div className="grid grid-cols-2 p-1 bg-muted/60 dark:bg-muted/30 rounded-lg border border-border/70 shadow-2xs">
         {items.map((item) => {
           const Icon = item.icon;

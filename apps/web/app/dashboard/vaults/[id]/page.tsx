@@ -472,7 +472,7 @@ export default function VaultDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-1 flex-col gap-6 p-6">
+      <div className="flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-40 w-full rounded-2xl" />
         <Skeleton className="h-96 w-full rounded-xl" />
@@ -515,7 +515,7 @@ export default function VaultDetailPage() {
   const vaultAccentColor = vault.color || "#3B82F6";
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
       {/* Top Breadcrumb / Back Navigation */}
       <div className="flex items-center gap-2">
         <Link
@@ -528,7 +528,7 @@ export default function VaultDetailPage() {
       </div>
 
       {/* Vault Header Hero Card */}
-      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-r from-card via-card to-primary/5 p-6 shadow-sm">
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-gradient-to-r from-card via-card to-primary/5 p-4 sm:p-6 shadow-sm">
         <div
           className="absolute top-0 left-0 right-0 h-1.5"
           style={{ backgroundColor: vaultAccentColor }}
@@ -607,11 +607,14 @@ export default function VaultDetailPage() {
 
         {/* Current Balance Row */}
         <div className="mt-6 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-t border-border/60 pt-4">
-          <div>
+          <div className="min-w-0">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Current Balance
             </span>
-            <div className="text-3xl font-extrabold tracking-tight text-foreground font-mono">
+            <div
+              className="text-2xl sm:text-3xl font-extrabold text-foreground font-mono truncate"
+              title={formatCurrency(vault.balance)}
+            >
               {formatCurrency(vault.balance)}
             </div>
           </div>

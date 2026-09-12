@@ -110,7 +110,7 @@ function VaultsContent() {
   }, [vaults, searchQuery, filterType]);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
       {/* Top Header matching Transactions Page */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -223,11 +223,11 @@ function VaultsContent() {
 
       {/* Account Cards Grid or Empty State */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+        <div className="flex flex-wrap gap-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-xl border bg-card p-4 space-y-3 shadow-xs"
+              className="w-full sm:w-[360px] max-w-full rounded-xl border bg-card p-4 space-y-3 shadow-xs"
             >
               <div className="flex items-center justify-between">
                 <Skeleton className="h-6 w-32" />
@@ -243,27 +243,28 @@ function VaultsContent() {
           ))}
         </div>
       ) : filteredVaults.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+        <div className="flex flex-wrap gap-4">
           {filteredVaults.map((vault) => (
-            <VaultCard
-              key={vault.id}
-              vault={vault}
-              onUpdateBalance={(v) => setVaultToUpdateBalance(v)}
-              onEdit={(v) => {
-                setVaultToEdit(v);
-                setIsAddOpen(true);
-              }}
-              onSetDefault={async (v) => {
-                if (v.isDefault) return;
-                try {
-                  await api.updateVault(v.id, { isDefault: true });
-                  await fetchVaults();
-                } catch (err) {
-                  console.error("Failed to set vault as default:", err);
-                }
-              }}
-              onDelete={(v) => setVaultToDelete(v)}
-            />
+            <div key={vault.id} className="w-full sm:w-[360px] max-w-full">
+              <VaultCard
+                vault={vault}
+                onUpdateBalance={(v) => setVaultToUpdateBalance(v)}
+                onEdit={(v) => {
+                  setVaultToEdit(v);
+                  setIsAddOpen(true);
+                }}
+                onSetDefault={async (v) => {
+                  if (v.isDefault) return;
+                  try {
+                    await api.updateVault(v.id, { isDefault: true });
+                    await fetchVaults();
+                  } catch (err) {
+                    console.error("Failed to set vault as default:", err);
+                  }
+                }}
+                onDelete={(v) => setVaultToDelete(v)}
+              />
+            </div>
           ))}
         </div>
       ) : (

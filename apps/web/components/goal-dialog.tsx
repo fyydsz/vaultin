@@ -302,7 +302,7 @@ export function GoalDialog({
 }: GoalDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md p-5 sm:p-6 max-h-[90dvh] overflow-y-auto">
         {open && (
           <GoalForm
             key={goalToEdit?.id ?? "new"}

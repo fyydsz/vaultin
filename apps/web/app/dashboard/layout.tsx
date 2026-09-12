@@ -125,7 +125,7 @@ export default function DashboardLayout({
       <SidebarInset>
         {/* Top Header */}
         <header className={cn(
-          "flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 border-b px-4 sticky z-40 bg-background/80 backdrop-blur-md",
+          "flex h-14 sm:h-16 landscape:h-11 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 border-b px-4 sticky z-40 bg-background/80 backdrop-blur-md",
           IS_PREVIEW ? "top-9" : "top-0"
         )}>
           {/* Left Side: Desktop Breadcrumb vs Mobile Brand Header (No Sidebar Toggle on Mobile) */}
@@ -191,7 +191,7 @@ export default function DashboardLayout({
         </Suspense>
         <EmailVerificationBanner />
 
-        <div className="flex flex-1 flex-col pb-24 md:pb-6">
+        <div className="@container flex flex-1 flex-col pb-28 sm:pb-32 md:pb-6">
           <MobileSubNav />
           {children}
         </div>

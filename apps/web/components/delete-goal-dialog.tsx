@@ -107,7 +107,7 @@ export function DeleteGoalDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-6">
+      <DialogContent className="max-w-md p-5 sm:p-6 max-h-[90dvh] overflow-y-auto">
         <DialogHeader className="gap-2">
           <div className="flex size-10 items-center justify-center rounded-full bg-destructive/10 text-destructive mx-auto">
             <AlertTriangleIcon className="size-5" />

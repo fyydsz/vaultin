@@ -517,7 +517,7 @@ export default function DashboardOverviewPage() {
   }, [vaults]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
+    <div className="@container flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
       {/* 1. Header Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-0.5">
         <div>
@@ -616,9 +616,9 @@ export default function DashboardOverviewPage() {
       </div>
 
       {/* 2. Top 4 Sleek Financial KPI Cards (Compact & Low-Profile) */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-1 @[300px]:grid-cols-2 @[700px]:grid-cols-4 gap-2 sm:gap-3">
         {/* Card 1: Total Net Worth */}
-        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs min-w-0 overflow-hidden">
           <div className="flex items-center justify-between gap-1">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
               Total Net Worth
@@ -627,11 +627,14 @@ export default function DashboardOverviewPage() {
               <WalletIcon className="size-3 sm:size-3.5" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2">
+          <div className="mt-1.5 sm:mt-2 min-w-0">
             {isLoading ? (
               <Skeleton className="h-5 sm:h-6 w-20 sm:w-28" />
             ) : (
-              <div className="font-mono text-sm sm:text-base md:text-lg font-bold text-foreground tracking-tight">
+              <div
+                className="font-mono text-sm sm:text-base @[850px]:text-lg font-bold text-foreground truncate"
+                title={formatCurrency(totalNetWorth)}
+              >
                 {formatCurrency(totalNetWorth)}
               </div>
             )}
@@ -642,7 +645,7 @@ export default function DashboardOverviewPage() {
         </div>
 
         {/* Card 2: This Month Inflow */}
-        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs min-w-0 overflow-hidden">
           <div className="flex items-center justify-between gap-1">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
               Monthly Inflow
@@ -651,11 +654,14 @@ export default function DashboardOverviewPage() {
               <ArrowUpRightIcon className="size-3 sm:size-3.5" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2">
+          <div className="mt-1.5 sm:mt-2 min-w-0">
             {isLoading ? (
               <Skeleton className="h-5 sm:h-6 w-20 sm:w-28" />
             ) : (
-              <div className="font-mono text-sm sm:text-base md:text-lg font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">
+              <div
+                className="font-mono text-sm sm:text-base @[850px]:text-lg font-bold text-emerald-600 dark:text-emerald-400 truncate"
+                title={`+${formatCurrency(currentMonthStats.inflow)}`}
+              >
                 +{formatCurrency(currentMonthStats.inflow)}
               </div>
             )}
@@ -666,7 +672,7 @@ export default function DashboardOverviewPage() {
         </div>
 
         {/* Card 3: This Month Outflow */}
-        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs min-w-0 overflow-hidden">
           <div className="flex items-center justify-between gap-1">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
               Monthly Outflow
@@ -675,11 +681,14 @@ export default function DashboardOverviewPage() {
               <ArrowDownRightIcon className="size-3 sm:size-3.5" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2">
+          <div className="mt-1.5 sm:mt-2 min-w-0">
             {isLoading ? (
               <Skeleton className="h-5 sm:h-6 w-20 sm:w-28" />
             ) : (
-              <div className="font-mono text-sm sm:text-base md:text-lg font-bold text-rose-600 dark:text-rose-400 tracking-tight">
+              <div
+                className="font-mono text-sm sm:text-base @[850px]:text-lg font-bold text-rose-600 dark:text-rose-400 truncate"
+                title={`-${formatCurrency(currentMonthStats.outflow)}`}
+              >
                 -{formatCurrency(currentMonthStats.outflow)}
               </div>
             )}
@@ -690,7 +699,7 @@ export default function DashboardOverviewPage() {
         </div>
 
         {/* Card 4: Net Flow & Savings Rate */}
-        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-2.5 sm:p-3.5 shadow-2xs min-w-0 overflow-hidden">
           <div className="flex items-center justify-between gap-1">
             <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">
               Monthly Net Flow
@@ -699,18 +708,19 @@ export default function DashboardOverviewPage() {
               <ActivityIcon className="size-3 sm:size-3.5" />
             </div>
           </div>
-          <div className="mt-1.5 sm:mt-2">
+          <div className="mt-1.5 sm:mt-2 min-w-0">
             {isLoading ? (
               <Skeleton className="h-5 sm:h-6 w-20 sm:w-28" />
             ) : (
               <div
-                className={`font-mono text-sm sm:text-base md:text-lg font-bold tracking-tight ${
+                className={`font-mono text-sm sm:text-base @[850px]:text-lg font-bold truncate ${
                   currentMonthStats.net > 0
                     ? "text-emerald-600 dark:text-emerald-400"
                     : currentMonthStats.net < 0
                     ? "text-rose-600 dark:text-rose-400"
                     : "text-foreground"
                 }`}
+                title={`${currentMonthStats.net > 0 ? "+" : currentMonthStats.net < 0 ? "-" : ""}${formatCurrency(Math.abs(currentMonthStats.net))}`}
               >
                 {currentMonthStats.net > 0 ? "+" : currentMonthStats.net < 0 ? "-" : ""}
                 {formatCurrency(Math.abs(currentMonthStats.net))}
@@ -857,7 +867,7 @@ export default function DashboardOverviewPage() {
       </Card>
 
       {/* 4. BALANCED 3-COLUMN BENTO GRID: Accounts | Recent Activity | Spending Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+      <div className="grid grid-cols-1 @[860px]:grid-cols-3 gap-6 items-stretch">
         {/* BENTO CARD 1: Your Accounts / Vaults */}
         <Card className="shadow-xs border-border/80 flex flex-col justify-between">
           <div>

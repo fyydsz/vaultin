@@ -193,7 +193,7 @@ export function GoalCard({
   }, [isCompleted, deadlineInfo?.isOverdue, percentage]);
 
   return (
-    <Card className="flex flex-col justify-between transition-all duration-200 hover:shadow-md border-border/80 relative group overflow-hidden bg-card/90">
+    <Card className="w-full h-full flex flex-col justify-between transition-all duration-200 hover:shadow-md border-border/80 relative group overflow-hidden bg-card/90">
       {/* Top Accent Color Bar */}
       <div
         className="h-1 w-full absolute top-0 left-0 right-0"
@@ -291,19 +291,25 @@ export function GoalCard({
         {/* Saved vs Target & Progress */}
         <div className="space-y-2 border-t border-border/50 pt-2.5">
           <div className="flex items-baseline justify-between gap-2">
-            <div>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="min-w-0">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate block">
                 Saved So Far
               </span>
-              <div className="text-base font-bold tracking-tight text-foreground font-mono">
+              <div
+                className="text-sm sm:text-base font-bold text-foreground font-mono truncate"
+                title={currentFormatted}
+              >
                 {currentFormatted}
               </div>
             </div>
-            <div className="text-right">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="text-right min-w-0">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground truncate block">
                 Target Amount
               </span>
-              <div className="text-xs font-semibold text-muted-foreground font-mono">
+              <div
+                className="text-xs font-semibold text-muted-foreground font-mono truncate"
+                title={targetFormatted}
+              >
                 / {targetFormatted}
               </div>
             </div>

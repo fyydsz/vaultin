@@ -79,7 +79,7 @@ export function PlaceholderSection({
   className = "",
 }: PlaceholderSectionProps) {
   return (
-    <div className={`flex flex-1 flex-col gap-6 p-6 ${className}`.trim()}>
+    <div className={`flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6 ${className}`.trim()}>
       {/* Top Header matching Transactions Page */}
       <PageHeader
         icon={Icon}

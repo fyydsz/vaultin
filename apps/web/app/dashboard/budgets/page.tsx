@@ -160,7 +160,7 @@ function BudgetsContent() {
   }, [budgets, searchQuery, filterStatus, filterCategory]);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="@container flex flex-1 flex-col gap-4 sm:gap-6 p-4 sm:p-6">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -271,58 +271,64 @@ function BudgetsContent() {
 
       {/* Summary KPI Cards matching Goals */}
       {budgets.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+        <div className="grid grid-cols-1 @[320px]:grid-cols-2 @[700px]:grid-cols-4 gap-2.5 sm:gap-3">
+          <div className="rounded-xl border bg-card p-3 sm:p-3.5 shadow-2xs space-y-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-[11px] font-medium">Total Spent</span>
-              <CoinsIcon className="size-3.5 text-rose-500" />
+              <span className="text-[11px] font-medium truncate">Total Spent</span>
+              <CoinsIcon className="size-3.5 text-rose-500 shrink-0" />
             </div>
-            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+            <div
+              className="text-sm sm:text-base @[850px]:text-lg font-bold text-foreground font-mono truncate"
+              title={formatCurrency(summary.totalSpent)}
+            >
               {formatCurrency(summary.totalSpent)}
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground truncate">
               Across all categories
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-[11px] font-medium">Total Budget</span>
-              <TrendingUpIcon className="size-3.5 text-primary" />
+              <span className="text-[11px] font-medium truncate">Total Budget</span>
+              <TrendingUpIcon className="size-3.5 text-primary shrink-0" />
             </div>
-            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+            <div
+              className="text-sm sm:text-base @[850px]:text-lg font-bold text-foreground font-mono truncate"
+              title={formatCurrency(summary.totalBudget)}
+            >
               {formatCurrency(summary.totalBudget)}
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground truncate">
               Combined spending limit
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-[11px] font-medium">Budget Used</span>
-              <SparklesIcon className="size-3.5 text-amber-500" />
+              <span className="text-[11px] font-medium truncate">Budget Used</span>
+              <SparklesIcon className="size-3.5 text-amber-500 shrink-0" />
             </div>
-            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+            <div className="text-sm sm:text-base @[850px]:text-lg font-bold text-foreground font-mono truncate">
               {summary.overallPercentage}%
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground truncate">
               Overall monthly usage
             </div>
           </div>
 
-          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1">
+          <div className="rounded-xl border bg-card p-3.5 shadow-2xs space-y-1 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-[11px] font-medium">Budget Health</span>
-              <CheckCircle2Icon className="size-3.5 text-emerald-500" />
+              <span className="text-[11px] font-medium truncate">Budget Health</span>
+              <CheckCircle2Icon className="size-3.5 text-emerald-500 shrink-0" />
             </div>
-            <div className="text-lg font-bold tracking-tight text-foreground font-mono">
+            <div className="text-sm sm:text-base @[850px]:text-lg font-bold text-foreground font-mono truncate">
               {summary.onTrackCount}{" "}
               <span className="text-xs font-normal text-muted-foreground">
-                / {budgets.length} on track
+                / {budgets.length}
               </span>
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="text-[10px] text-muted-foreground truncate">
               {summary.warningCount + summary.overbudgetCount > 0 ? (
                 <span className="text-rose-600 dark:text-rose-400 font-medium">
                   {summary.warningCount + summary.overbudgetCount} need attention
@@ -420,11 +426,11 @@ function BudgetsContent() {
 
       {/* Budget Cards Grid or Empty State */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+        <div className="flex flex-wrap gap-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-xl border bg-card p-4 space-y-3 shadow-xs"
+              className="w-full sm:w-[360px] max-w-full rounded-xl border bg-card p-4 space-y-3 shadow-xs"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -443,22 +449,23 @@ function BudgetsContent() {
           ))}
         </div>
       ) : filteredBudgets.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+        <div className="flex flex-wrap gap-4">
           {filteredBudgets.map((budget) => (
-            <BudgetCard
-              key={budget.id}
-              budget={budget}
-              vaults={vaults}
-              onAddTransaction={(b) => {
-                setSelectedBudgetForTx(b);
-                setIsTxDialogOpen(true);
-              }}
-              onEdit={(b) => {
-                setBudgetToEdit(b);
-                setIsAddOpen(true);
-              }}
-              onDelete={(b) => setBudgetToDelete(b)}
-            />
+            <div key={budget.id} className="w-full sm:w-[360px] max-w-full">
+              <BudgetCard
+                budget={budget}
+                vaults={vaults}
+                onAddTransaction={(b) => {
+                  setSelectedBudgetForTx(b);
+                  setIsTxDialogOpen(true);
+                }}
+                onEdit={(b) => {
+                  setBudgetToEdit(b);
+                  setIsAddOpen(true);
+                }}
+                onDelete={(b) => setBudgetToDelete(b)}
+              />
+            </div>
           ))}
         </div>
       ) : (
